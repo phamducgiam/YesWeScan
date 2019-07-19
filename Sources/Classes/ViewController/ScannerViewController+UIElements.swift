@@ -60,6 +60,7 @@ extension ScannerViewController {
         let accuracyView = UIView()
         accuracyView.translatesAutoresizingMaskIntoConstraints = false
         accuracyView.backgroundColor = UIColor.black
+        accuracyView.isHidden = true
         let accuracyLabel = UILabel()
         accuracyLabel.translatesAutoresizingMaskIntoConstraints = false
         accuracyLabel.font = UIFont.systemFont(ofSize: 12)

@@ -18,9 +18,9 @@ public final class ScannerViewController: UIViewController {
         get { return scanner.desiredJitter }
     }
     public var braceColor: UIColor = .red
-    public var previewColor: UIColor = .green {
+    public var previewColor: UIColor = UIColor(displayP3Red: 5.0/255.0, green: 38.0/255.0, blue: 72.0/255.0, alpha: 1.0) {
         didSet {
-            detectionLayer.fillColor = previewColor.withAlphaComponent(0.3).cgColor
+            detectionLayer.fillColor = previewColor.withAlphaComponent(0.2).cgColor
             detectionLayer.strokeColor = previewColor.withAlphaComponent(0.9).cgColor
         }
     }
