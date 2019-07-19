@@ -5,6 +5,7 @@ public struct RectangleFeature {
     let topRight: CGPoint
     let bottomLeft: CGPoint
     let bottomRight: CGPoint
+    var accuracy: String?
 
     init(topLeft: CGPoint = .zero,
          topRight: CGPoint = .zero,
@@ -78,6 +79,50 @@ extension RectangleFeature {
                 abs(to.topRight - topRight) +
                 abs(to.bottomLeft - bottomLeft) +
                 abs(to.bottomRight - bottomRight)
+    }
+    
+    func area() -> CGFloat {
+        return re2demo.area(point1: topLeft, point2: topRight, point3: bottomRight, point4: bottomLeft)
+    }
+    
+    mutating func calculateAccuracy() {
+        let a = distance(point1: topLeft, point2: topRight)
+        let b = distance(point1: topRight, point2: bottomRight)
+        let c = distance(point1: bottomRight, point2: bottomLeft)
+        let d = distance(point1: bottomLeft, point2: topLeft)
+        let mpi2 = CGFloat.pi / 2
+        var rate = CGFloat(1.0)
+        var angle = acos(((topLeft.x - topRight.x) * (bottomRight.x - topRight.x) + (topLeft.y - topRight.y) * (bottomRight.y - topRight.y)) / (a * b))
+        rate *= angle < mpi2 ? angle / mpi2 : mpi2 / angle
+        angle = acos(((topRight.x - bottomRight.x) * (bottomLeft.x - bottomRight.x) + (topRight.y - bottomRight.y) * (bottomLeft.y - bottomRight.y)) / (b * c))
+        rate *= angle < mpi2 ? angle / mpi2 : mpi2 / angle
+        angle = acos(((bottomRight.x - bottomLeft.x) * (topLeft.x - bottomLeft.x) + (bottomRight.y - bottomLeft.y) * (topLeft.y - bottomLeft.y)) / (c * d))
+        rate *= angle < mpi2 ? angle / mpi2 : mpi2 / angle
+        angle = acos(((topRight.x - topLeft.x) * (bottomLeft.x - topLeft.x) + (topRight.y - topLeft.y) * (bottomLeft.y - topLeft.y)) / (d * a))
+        rate *= angle < mpi2 ? angle / mpi2 : mpi2 / angle
+        print("rectange rate: \(rate)")
+        if rate < 0.9 {
+            self.accuracy = "Hold straight"
+            return
+        }
+        
+        let e = distance(point1: topRight, point2: bottomLeft)
+        let f = distance(point1: topLeft, point2: bottomRight)
+        /*let area1 = (a + b + f) * (a + b - f) * (b + f - a) * (f + a - b)
+        let area2 = (c + d + f) * (c + d - f) * (d + f - c) * (f + c - d)
+        let area = 0.25 * (sqrt(area1) + sqrt(area2))*/
+        let t = b * b + d * d - a * a - c * c
+        let area = 0.25 * sqrt(4 * e * e * f * f - t * t)
+        let screenSize = UIScreen.main.bounds.size
+        let screenArea = screenSize.width * screenSize.height
+        let ratio = area / screenArea
+        print("rectangle topLeft: \(topLeft), topRight: \(topRight), bottomRight: \(bottomRight), bottomLeft: \(bottomLeft); rectange area: \(area); screen size: \(screenSize); screen area: \(screenArea); ratio: \(ratio)")
+        if ratio < 0.4 {
+            self.accuracy = "Move closer"
+            return
+        }
+        
+        self.accuracy = nil
     }
 
     /// This isn't the real area, but enables correct comparison

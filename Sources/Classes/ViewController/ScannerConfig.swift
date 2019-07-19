@@ -11,12 +11,14 @@ public extension ScannerViewController {
         public static let torch = ScannerConfig(rawValue: 1 << 1)
         public static let manualCapture = ScannerConfig(rawValue: 1 << 2)
         public static let progressBar = ScannerConfig(rawValue: 1 << 3)
+        public static let accuracy = ScannerConfig(rawValue: 1 << 4)
 
         public static let all: ScannerConfig = [
             .targetBraces,
             .torch,
             .manualCapture,
-            .progressBar
+            .progressBar,
+            .accuracy
         ]
     }
 }

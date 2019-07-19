@@ -116,13 +116,15 @@ extension AVDocumentScanner: AVCaptureVideoDataOutputSampleBufferDelegate {
     func smooth(feature: RectangleFeature?, in image: CIImage) -> RectangleFeature? {
         guard let feature = feature else { return nil }
 
-        let (smoothed, newFeatures) = feature.smoothed(with: lastFeatures)
+        var (smoothed, newFeatures) = feature.smoothed(with: lastFeatures)
         lastFeatures = newFeatures
         progress.totalUnitCount = Int64(newFeatures.jitter)
+        smoothed.calculateAccuracy()
 
         if newFeatures.count > featuresRequired,
             newFeatures.jitter < desiredJitter,
             isStopped == false,
+            smoothed.accuracy == nil,
             let delegate = delegate {
 
             pause()

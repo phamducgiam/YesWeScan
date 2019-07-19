@@ -64,8 +64,15 @@ extension ImageCapturer: AVCapturePhotoCaptureDelegate {
 
         // This is necessary because most UIKit functionality expects UIImages
         // that have the cgImage property set
-        if let cgImage = CIContext().createCGImage(processed, from: processed.extent) {
+        /*if let cgImage = CIContext().createCGImage(processed, from: processed.extent) {
             imageClosure(UIImage(cgImage: cgImage))
-        }
+        }*/
+        
+        /*if let image = processed.applyingAdaptiveThreshold() {
+         imageClosure(image)
+         }*/
+        
+        let enhancedImage = OpenCVWarpper.enhanceImage(processed)
+        imageClosure(enhancedImage)
     }
 }

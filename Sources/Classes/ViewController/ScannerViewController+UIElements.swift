@@ -55,6 +55,24 @@ extension ScannerViewController {
         progressBar.translatesAutoresizingMaskIntoConstraints = false
         return progressBar
     }
+    
+    func makeAccuracyView() -> (UIView, UILabel) {
+        let accuracyView = UIView()
+        accuracyView.translatesAutoresizingMaskIntoConstraints = false
+        accuracyView.backgroundColor = UIColor.black
+        let accuracyLabel = UILabel()
+        accuracyLabel.translatesAutoresizingMaskIntoConstraints = false
+        accuracyLabel.font = UIFont.systemFont(ofSize: 12)
+        accuracyLabel.textColor = UIColor.white
+        accuracyView.addSubview(accuracyLabel)
+        NSLayoutConstraint.activate([
+            accuracyLabel.leadingAnchor.constraint(equalTo: accuracyView.leadingAnchor, constant: 12.0),
+            accuracyLabel.trailingAnchor.constraint(equalTo: accuracyView.trailingAnchor, constant: -12.0),
+            accuracyLabel.topAnchor.constraint(equalTo: accuracyView.topAnchor, constant: 8.0),
+            accuracyLabel.bottomAnchor.constraint(equalTo: accuracyView.bottomAnchor, constant: -8.0)
+        ])
+        return (accuracyView, accuracyLabel)
+    }
 }
 
 private func blurView() -> UIVisualEffectView {

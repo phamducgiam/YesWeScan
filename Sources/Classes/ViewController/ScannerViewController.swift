@@ -67,6 +67,8 @@ public final class ScannerViewController: UIViewController {
     @IBOutlet private weak var targetButton: UIView!
     @IBOutlet private weak var torchButton: UIView!
     @IBOutlet private weak var progressBar: UIProgressView!
+    @IBOutlet private weak var accuracyView: UIView!
+    @IBOutlet private weak var accuracyLabel: UILabel!
 
     private lazy var scanner: DocumentScanner & TorchPickerViewDelegate = {
         AVDocumentScanner(sessionPreset: sessionPreset, delegate: self)
@@ -168,6 +170,17 @@ public final class ScannerViewController: UIViewController {
                 progressBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
                 progressBar.topAnchor.constraint(equalTo: view.topAnchor),
                 progressBar.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            ])
+        }
+        
+        if config.contains(.accuracy) {
+            let (accuracyView, accuracyLabel) = makeAccuracyView()
+            self.accuracyView = accuracyView
+            self.accuracyLabel = accuracyLabel
+            view.addSubview(accuracyView)
+            NSLayoutConstraint.activate([
+                accuracyView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                accuracyView.centerYAnchor.constraint(equalTo: view.centerYAnchor)
             ])
         }
     }
@@ -278,6 +291,15 @@ extension ScannerViewController: DocumentScannerDelegate {
     public func didRecognize(feature: RectangleFeature?, in image: CIImage) {
         guard let feature = feature else { detectionLayer.path = nil; return }
 
+        if let accuracy = feature.accuracy {
+            self.accuracyView.isHidden = false
+            self.accuracyLabel.text = accuracy
+        }
+        else {
+            self.accuracyView.isHidden = true
+            self.accuracyLabel.text = nil
+        }
+        
         detectionLayer.path = feature.bezierPath.cgPath
     }
 }
