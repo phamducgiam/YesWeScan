@@ -51,12 +51,15 @@ extension ImageCapturer: AVCapturePhotoCaptureDelegate {
             let normalized = feature.normalized(source: UIScreen.main.bounds.size,
                                                 target: image.extent.size)
 
+            var topLeft = normalized.topLeft, topRight = normalized.topRight, bottomLeft = normalized.bottomLeft, bottomRight = normalized.bottomRight
+            (topLeft, bottomRight) = extend(point1: topLeft, point2: bottomRight)
+            (topRight, bottomLeft) = extend(point1: topRight, point2: bottomLeft)
             processed = image
                 .applyingFilter("CIPerspectiveCorrection", parameters: [
-                    "inputTopLeft": CIVector(cgPoint: normalized.topLeft),
-                    "inputTopRight": CIVector(cgPoint: normalized.topRight),
-                    "inputBottomLeft": CIVector(cgPoint: normalized.bottomLeft),
-                    "inputBottomRight": CIVector(cgPoint: normalized.bottomRight)
+                    "inputTopLeft": CIVector(cgPoint: topLeft),
+                    "inputTopRight": CIVector(cgPoint: topRight),
+                    "inputBottomLeft": CIVector(cgPoint: bottomLeft),
+                    "inputBottomRight": CIVector(cgPoint: bottomRight)
                 ])
         } else {
             processed = image
@@ -64,15 +67,15 @@ extension ImageCapturer: AVCapturePhotoCaptureDelegate {
 
         // This is necessary because most UIKit functionality expects UIImages
         // that have the cgImage property set
-        /*if let cgImage = CIContext().createCGImage(processed, from: processed.extent) {
+        if let cgImage = CIContext().createCGImage(processed, from: processed.extent) {
             imageClosure(UIImage(cgImage: cgImage))
-        }*/
+        }
         
         /*if let image = processed.applyingAdaptiveThreshold() {
          imageClosure(image)
          }*/
         
-        let enhancedImage = OpenCVWarpper.enhanceImage(processed)
-        imageClosure(enhancedImage)
+        /*let enhancedImage = OpenCVWarpper.enhanceImage(processed)
+        imageClosure(enhancedImage)*/
     }
 }

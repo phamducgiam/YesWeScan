@@ -56,6 +56,12 @@ func area(point1: CGPoint, point2: CGPoint, point3: CGPoint, point4: CGPoint) ->
     return 0.25 * (sqrt(r1) + sqrt(r2))
 }
 
+func extend(point1: CGPoint, point2: CGPoint, ratio: CGFloat = CGFloat(0.05)) -> (CGPoint, CGPoint) {
+    let p1 = CGPoint(x: (1 + ratio) * point1.x - ratio * point2.x, y: (1 + ratio) * point1.y - ratio * point2.y)
+    let p2 = CGPoint(x: (1 + ratio) * point2.x - ratio * point1.x, y: (1 + ratio) * point2.y - ratio * point1.y)
+    return distance(point1: p1, point2: point1) < distance(point1: point1, point2: point2) ? (p1, p2) : (p2, p1)
+}
+
 extension RectangleFeature {
     static func + (lhs: RectangleFeature, rhs: RectangleFeature) -> RectangleFeature {
         return RectangleFeature(topLeft: lhs.topLeft + rhs.topLeft,
