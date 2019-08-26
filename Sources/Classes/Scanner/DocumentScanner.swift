@@ -17,6 +17,12 @@ public protocol DocumentScanner {
 
     /// Indicates the progress of the scan
     var progress: Progress { get }
+    
+    /// A value that controls whether or not detector is enabled.
+    var detectorEnabled: Bool { get set }
+    
+    /// A value that controls flash of capture device
+    var torchMode: AVCaptureDevice.TorchMode { get set }
 
     /// Manually capture an image in given bounds
     ///

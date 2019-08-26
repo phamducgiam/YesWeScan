@@ -6,7 +6,21 @@ public final class AVDocumentScanner: NSObject {
     public var desiredJitter: CGFloat = 100 {
         didSet { progress.completedUnitCount = Int64(desiredJitter) }
     }
+    public var torchMode: AVCaptureDevice.TorchMode = .auto {
+        didSet {
+            if let device = device {
+                do {
+                    try device.lockForConfiguration()
+                    device.torchMode = torchMode
+                    device.unlockForConfiguration()
+                } catch let error {
+                    print("Couldn't set torch mode for device - \(error.localizedDescription)")
+                }
+            }
+        }
+    }
     public var featuresRequired: Int = 7
+    public var detectorEnabled: Bool = true
 
     public let progress = Progress()
 
@@ -91,13 +105,18 @@ extension AVDocumentScanner: AVCaptureVideoDataOutputSampleBufferDelegate {
     public func captureOutput(_: AVCaptureOutput,
                               didOutput sampleBuffer: CMSampleBuffer,
                               from _: AVCaptureConnection) {
-
+        
         guard isStopped == false,
             CMSampleBufferIsValid(sampleBuffer),
             let buffer = CMSampleBufferGetImageBuffer(sampleBuffer)
             else { return }
 
         let image = CIImage(cvImageBuffer: buffer)
+        
+        if !detectorEnabled {
+            return
+        }
+        
         let feature = detector.features(in: image)
             .compactMap { $0 as? CIRectangleFeature }
             .map(RectangleFeature.init)

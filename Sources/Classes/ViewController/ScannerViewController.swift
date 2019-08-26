@@ -45,6 +45,46 @@ public final class ScannerViewController: UIViewController {
     public var progress: Progress {
         return scanner.progress
     }
+    
+    public var detectorEnabled: Bool {
+        set {
+            if scanner.detectorEnabled != newValue {
+                scanner.detectorEnabled = newValue
+            }
+        }
+        get {
+            return scanner.detectorEnabled
+        }
+    }
+    
+    public var torchMode: AVCaptureDevice.TorchMode {
+        set {
+            if scanner.torchMode != newValue {
+                scanner.torchMode = newValue
+            }
+        }
+        get {
+            return scanner.torchMode
+        }
+    }
+    
+    public weak var overlayView: UIView? {
+        didSet {
+            if let overlayView = overlayView {
+                overlayView.frame = view.bounds
+                overlayView.translatesAutoresizingMaskIntoConstraints = false
+                view.addSubview(overlayView)
+                NSLayoutConstraint.activate([
+                    overlayView.topAnchor.constraint(equalTo: view.topAnchor),
+                    overlayView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                    overlayView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                    overlayView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+                    ])
+            }
+        }
+    }
+    
+    public var currentImage: UIImage?
 
     public init(sessionPreset: AVCaptureSession.Preset = .photo, config: ScannerConfig = .all) {
         self.sessionPreset = sessionPreset
@@ -188,7 +228,9 @@ public final class ScannerViewController: UIViewController {
     public override func viewDidLoad() {
         super.viewDidLoad()
 
+        #if !targetEnvironment(simulator)
         setupCameraPreview()
+        #endif
     }
 
     public override func viewWillAppear(_ animated: Bool) {
@@ -289,6 +331,8 @@ extension ScannerViewController: DocumentScannerDelegate {
     }
 
     public func didRecognize(feature: RectangleFeature?, in image: CIImage) {
+        currentImage = UIImage(ciImage: image)
+        
         guard let feature = feature else { detectionLayer.path = nil; return }
 
         if let accuracy = feature.accuracy {
