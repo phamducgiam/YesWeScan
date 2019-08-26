@@ -51,6 +51,8 @@ public final class ScannerViewController: UIViewController {
             if scanner.detectorEnabled != newValue {
                 scanner.detectorEnabled = newValue
             }
+            detectionLayer.path = nil
+            accuracyView.isHidden = true
         }
         get {
             return scanner.detectorEnabled
@@ -65,6 +67,17 @@ public final class ScannerViewController: UIViewController {
         }
         get {
             return scanner.torchMode
+        }
+    }
+    
+    public var flashMode: AVCaptureDevice.FlashMode {
+        set {
+            if scanner.flashMode != newValue {
+                scanner.flashMode = newValue
+            }
+        }
+        get {
+            return scanner.flashMode
         }
     }
     
@@ -83,8 +96,6 @@ public final class ScannerViewController: UIViewController {
             }
         }
     }
-    
-    public var currentImage: UIImage?
 
     public init(sessionPreset: AVCaptureSession.Preset = .photo, config: ScannerConfig = .all) {
         self.sessionPreset = sessionPreset
@@ -320,6 +331,10 @@ extension ScannerViewController {
             picker.frame.origin.x = self.view.frame.width - picker.frame.width
         }
     }
+    
+    public func capturePhoto() {
+        scanner.capturePhoto()
+    }
 }
 
 extension ScannerViewController: DocumentScannerDelegate {
@@ -331,8 +346,6 @@ extension ScannerViewController: DocumentScannerDelegate {
     }
 
     public func didRecognize(feature: RectangleFeature?, in image: CIImage) {
-        currentImage = UIImage(ciImage: image)
-        
         guard let feature = feature else { detectionLayer.path = nil; return }
 
         if let accuracy = feature.accuracy {
@@ -345,6 +358,13 @@ extension ScannerViewController: DocumentScannerDelegate {
         }
         
         detectionLayer.path = feature.bezierPath.cgPath
+    }
+    
+    public func didCapturePhoto(image: UIImage) {
+        if let delegate = delegate {
+            scanner.pause()
+            delegate.scanner(self, didCapturePhoto: image)
+        }
     }
 }
 

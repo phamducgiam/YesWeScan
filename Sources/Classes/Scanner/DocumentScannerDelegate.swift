@@ -16,4 +16,7 @@ public protocol DocumentScannerDelegate: AnyObject {
     ///   - feature: The extent of the image that is being recognized
     ///   - image: The image that contains the image to be recognized
     func didRecognize(feature: RectangleFeature?, in image: CIImage)
+    
+    // called after capture photo
+    func didCapturePhoto(image: UIImage)
 }

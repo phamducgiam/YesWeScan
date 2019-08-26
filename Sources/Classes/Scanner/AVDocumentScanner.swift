@@ -19,8 +19,13 @@ public final class AVDocumentScanner: NSObject {
             }
         }
     }
+    public var flashMode: AVCaptureDevice.FlashMode = .auto
     public var featuresRequired: Int = 7
-    public var detectorEnabled: Bool = true
+    public var detectorEnabled: Bool = true {
+        didSet {
+            updateOutput()
+        }
+    }
 
     public let progress = Progress()
 
@@ -57,7 +62,8 @@ public final class AVDocumentScanner: NSObject {
         imageCapturer = ImageCapturer(session: session)
         super.init()
         progress.completedUnitCount = Int64(desiredJitter)
-        output.setSampleBufferDelegate(self, queue: imageQueue)
+        
+        updateOutput()
     }
 
     public convenience init(sessionPreset: AVCaptureSession.Preset = .photo,
@@ -82,16 +88,17 @@ public final class AVDocumentScanner: NSObject {
             .first { $0.hasTorch }
     }()
 
-    private lazy var output: AVCaptureVideoDataOutput = {
+    private lazy var videoOutput: AVCaptureVideoDataOutput = {
         let output = AVCaptureVideoDataOutput()
 
         output.videoSettings = [
             kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
         ]
-        captureSession.addOutput(output)
         output.connection(with: .video)?.videoOrientation = .portrait
         return output
     }()
+    
+    private var captureOutput: AVCaptureOutput?
 
     private let detector = CIDetector(ofType: CIDetectorTypeRectangle, context: nil, options: [
         CIDetectorAccuracy: CIDetectorAccuracyHigh,
@@ -99,6 +106,26 @@ public final class AVDocumentScanner: NSObject {
 
         // swiftlint:disable:next force_unwrapping
         ])!
+    
+    private func updateOutput() {
+        if let captureOutput = captureOutput {
+            captureSession.beginConfiguration()
+            captureSession.removeOutput(captureOutput)
+            captureSession.commitConfiguration()
+        }
+        
+        captureSession.beginConfiguration()
+        if detectorEnabled {
+            videoOutput.setSampleBufferDelegate(self, queue: imageQueue)
+            captureSession.addOutput(videoOutput)
+            captureOutput = videoOutput
+        }
+        else {
+            videoOutput.setSampleBufferDelegate(nil, queue: nil)
+            captureOutput = nil
+        }
+        captureSession.commitConfiguration()
+    }
 }
 
 extension AVDocumentScanner: AVCaptureVideoDataOutputSampleBufferDelegate {
@@ -177,6 +204,15 @@ extension AVDocumentScanner: DocumentScanner {
         }
         captureSession.stopRunning()
     }
+    public func capturePhoto() {
+        if detectorEnabled {
+            return
+        }
+        let settings = AVCapturePhotoSettings()
+        settings.flashMode = flashMode
+        let output: AVCapturePhotoOutput = captureSession.outputs[0] as! AVCapturePhotoOutput
+        output.capturePhoto(with: settings, delegate: self)
+    }
 }
 
 extension AVDocumentScanner: TorchPickerViewDelegate {
@@ -208,5 +244,19 @@ extension AVDocumentScanner: TorchPickerViewDelegate {
             }
             device?.unlockForConfiguration()
         } catch {}
+    }
+}
+
+extension AVDocumentScanner: AVCapturePhotoCaptureDelegate {
+    public func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+        guard let data = photo.fileDataRepresentation() else {
+            return
+        }
+        
+        guard let image = UIImage(data: data) else {
+            return
+        }
+        
+        self.delegate?.didCapturePhoto(image: image)
     }
 }

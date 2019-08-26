@@ -21,8 +21,11 @@ public protocol DocumentScanner {
     /// A value that controls whether or not detector is enabled.
     var detectorEnabled: Bool { get set }
     
-    /// A value that controls flash of capture device
+    /// A value that controls torch mode of capture device
     var torchMode: AVCaptureDevice.TorchMode { get set }
+    
+    /// A value that controls torch mode of capture device
+    var flashMode: AVCaptureDevice.FlashMode { get set }
 
     /// Manually capture an image in given bounds
     ///
@@ -39,4 +42,6 @@ public protocol DocumentScanner {
     func start()
     func pause()
     func stop()
+    
+    func capturePhoto()
 }
