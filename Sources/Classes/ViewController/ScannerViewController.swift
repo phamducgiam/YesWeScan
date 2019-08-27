@@ -24,6 +24,16 @@ public final class ScannerViewController: UIViewController {
             detectionLayer.strokeColor = previewColor.withAlphaComponent(0.9).cgColor
         }
     }
+    public var previewFillColor: UIColor = UIColor(displayP3Red: 5.0/255.0, green: 38.0/255.0, blue: 72.0/255.0, alpha: 0.9) {
+        didSet {
+            detectionLayer.fillColor = previewFillColor.cgColor
+        }
+    }
+    public var previewStrokeColor: UIColor = UIColor(displayP3Red: 5.0/255.0, green: 38.0/255.0, blue: 72.0/255.0, alpha: 1.0) {
+        didSet {
+            detectionLayer.strokeColor = previewStrokeColor.cgColor
+        }
+    }
 
     public enum Quality {
         case high, medium, fast
