@@ -356,6 +356,12 @@ extension ScannerViewController: DocumentScannerDelegate {
     }
 
     public func didRecognize(feature: RectangleFeature?, in image: CIImage) {
+        if !self.detectorEnabled {
+            detectionLayer.path = nil
+            self.accuracyView.isHidden = true
+            return
+        }
+        
         guard let feature = feature else { detectionLayer.path = nil; return }
 
         if let accuracy = feature.accuracy {
