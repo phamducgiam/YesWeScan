@@ -94,7 +94,6 @@ public final class AVDocumentScanner: NSObject {
         output.videoSettings = [
             kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
         ]
-        output.connection(with: .video)?.videoOrientation = .portrait
         return output
     }()
     
@@ -118,11 +117,15 @@ public final class AVDocumentScanner: NSObject {
         if detectorEnabled {
             videoOutput.setSampleBufferDelegate(self, queue: imageQueue)
             captureSession.addOutput(videoOutput)
+            videoOutput.connection(with: .video)?.videoOrientation = .portrait
             captureOutput = videoOutput
         }
         else {
             videoOutput.setSampleBufferDelegate(nil, queue: nil)
             captureOutput = nil
+            
+            let photoOutput: AVCapturePhotoOutput = captureSession.outputs[0] as! AVCapturePhotoOutput
+            photoOutput.connection(with: .video)?.videoOrientation = .portrait
         }
         captureSession.commitConfiguration()
     }
@@ -210,8 +213,8 @@ extension AVDocumentScanner: DocumentScanner {
         }
         let settings = AVCapturePhotoSettings()
         settings.flashMode = flashMode
-        let output: AVCapturePhotoOutput = captureSession.outputs[0] as! AVCapturePhotoOutput
-        output.capturePhoto(with: settings, delegate: self)
+        let photoOutput: AVCapturePhotoOutput = captureSession.outputs[0] as! AVCapturePhotoOutput
+        photoOutput.capturePhoto(with: settings, delegate: self)
     }
 }
 
