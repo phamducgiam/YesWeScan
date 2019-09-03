@@ -31,7 +31,6 @@ public final class AVDocumentScanner: NSObject {
 
     public lazy var previewLayer: CALayer = {
         let layer = AVCaptureVideoPreviewLayer(session: captureSession)
-        layer.videoGravity = .resizeAspectFill
         return layer
     }()
 
@@ -115,12 +114,18 @@ public final class AVDocumentScanner: NSObject {
         
         captureSession.beginConfiguration()
         if detectorEnabled {
+            let layer = previewLayer as! AVCaptureVideoPreviewLayer
+            layer.videoGravity = .resizeAspectFill
+            
             videoOutput.setSampleBufferDelegate(self, queue: imageQueue)
             captureSession.addOutput(videoOutput)
             videoOutput.connection(with: .video)?.videoOrientation = .portrait
             captureOutput = videoOutput
         }
         else {
+            let layer = previewLayer as! AVCaptureVideoPreviewLayer
+            layer.videoGravity = .resizeAspect
+            
             videoOutput.setSampleBufferDelegate(nil, queue: nil)
             captureOutput = nil
             
@@ -252,14 +257,17 @@ extension AVDocumentScanner: TorchPickerViewDelegate {
 
 extension AVDocumentScanner: AVCapturePhotoCaptureDelegate {
     public func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+        if error != nil {
+            return
+        }
+        
         guard let data = photo.fileDataRepresentation() else {
             return
         }
         
-        guard let image = UIImage(data: data) else {
-            return
-        }
-        
+        let dataProvider = CGDataProvider(data: data as CFData)
+        let cgImageRef: CGImage! = CGImage(jpegDataProviderSource: dataProvider!, decode: nil, shouldInterpolate: true, intent: .defaultIntent)
+        let image = UIImage(cgImage: cgImageRef, scale: 1.0, orientation: UIImage.Orientation.right)
         self.delegate?.didCapturePhoto(image: image)
     }
 }
