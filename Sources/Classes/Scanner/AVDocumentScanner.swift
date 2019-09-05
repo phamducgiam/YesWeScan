@@ -51,7 +51,7 @@ public final class AVDocumentScanner: NSObject {
                 }
                 session.addInput(input)
                 session.commitConfiguration()
-                session.startRunning()
+                //session.startRunning()
             } catch let error {
                 fatalError("Device couldn't be initialized - \(error.localizedDescription)")
             }
