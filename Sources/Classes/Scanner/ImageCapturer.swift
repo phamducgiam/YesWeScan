@@ -37,7 +37,6 @@ extension ImageCapturer: AVCapturePhotoCaptureDelegate {
                      resolvedSettings: AVCaptureResolvedPhotoSettings,
                      bracketSettings: AVCaptureBracketedStillImageSettings?,
                      error: Error?) {
-
         guard let sampleBuffer = photoSampleBuffer,
             let imageData = AVCapturePhotoOutput
                 .jpegPhotoDataRepresentation(
@@ -46,11 +45,26 @@ extension ImageCapturer: AVCapturePhotoCaptureDelegate {
             let image = CIImage(data: imageData)?.oriented(forExifOrientation: 6)
             else { return }
 
+        processImage(image)
+    }
+    
+    func photoOutput(_ output: AVCapturePhotoOutput,
+                     didFinishProcessingPhoto photo: AVCapturePhoto,
+                     error: Error?) {
+        guard let imageData = photo.fileDataRepresentation(),
+            let image = CIImage(data: imageData)?.oriented(forExifOrientation: 6)
+            else { return }
+        
+        processImage(image)
+    }
+    
+    private func processImage(_ image: CIImage) {
+        print("process image with size: \(image.extent.size)")
         let processed: CIImage
         if let feature = feature {
             let normalized = feature.normalized(source: UIScreen.main.bounds.size,
                                                 target: image.extent.size)
-
+            
             var topLeft = normalized.topLeft, topRight = normalized.topRight, bottomLeft = normalized.bottomLeft, bottomRight = normalized.bottomRight
             (topLeft, bottomRight) = extend(point1: topLeft, point2: bottomRight)
             (topRight, bottomLeft) = extend(point1: topRight, point2: bottomLeft)
@@ -60,14 +74,21 @@ extension ImageCapturer: AVCapturePhotoCaptureDelegate {
                     "inputTopRight": CIVector(cgPoint: topRight),
                     "inputBottomLeft": CIVector(cgPoint: bottomLeft),
                     "inputBottomRight": CIVector(cgPoint: bottomRight)
-                ])
+                    ])
         } else {
             processed = image
         }
-
+        
         // This is necessary because most UIKit functionality expects UIImages
         // that have the cgImage property set
-        if let cgImage = CIContext().createCGImage(processed, from: processed.extent) {
+        let options: [CIContextOption : Any] = [
+            CIContextOption.useSoftwareRenderer: false,
+            CIContextOption.workingColorSpace: CGColorSpaceCreateDeviceRGB(),
+            CIContextOption.outputColorSpace: CGColorSpaceCreateDeviceRGB(),
+            CIContextOption.highQualityDownsample: true
+            ]
+        let context = CIContext(options: options)
+        if let cgImage = context.createCGImage(processed, from: processed.extent) {
             imageClosure(UIImage(cgImage: cgImage))
         }
         
@@ -76,6 +97,6 @@ extension ImageCapturer: AVCapturePhotoCaptureDelegate {
          }*/
         
         /*let enhancedImage = OpenCVWarpper.enhanceImage(processed)
-        imageClosure(enhancedImage)*/
+         imageClosure(enhancedImage)*/
     }
 }
