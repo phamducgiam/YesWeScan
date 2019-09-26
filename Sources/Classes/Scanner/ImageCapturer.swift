@@ -84,8 +84,7 @@ extension ImageCapturer: AVCapturePhotoCaptureDelegate {
         let options: [CIContextOption : Any] = [
             CIContextOption.useSoftwareRenderer: false,
             CIContextOption.workingColorSpace: CGColorSpaceCreateDeviceRGB(),
-            CIContextOption.outputColorSpace: CGColorSpaceCreateDeviceRGB(),
-            CIContextOption.highQualityDownsample: true
+            CIContextOption.outputColorSpace: CGColorSpaceCreateDeviceRGB()
             ]
         let context = CIContext(options: options)
         if let cgImage = context.createCGImage(processed, from: processed.extent) {
