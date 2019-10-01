@@ -257,15 +257,21 @@ public final class ScannerViewController: UIViewController {
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
+        if let navigationController = navigationController {
+            navigationController.setNavigationBarHidden(true, animated: false)
+        }
         scanner.start()
     }
 
     public override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
 
-        navigationController?.view.subviews
+        if let navigationController = navigationController {
+            navigationController.setNavigationBarHidden(false, animated: false)
+            navigationController.view.subviews
             .first { $0 is TorchPickerView }?
             .removeFromSuperview()
+        }
 
         scanner.stop()
     }
