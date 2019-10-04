@@ -100,7 +100,7 @@ extension RectangleFeature {
         let ratio = area / screenArea
         print("rectangle topLeft: \(topLeft), topRight: \(topRight), bottomRight: \(bottomRight), bottomLeft: \(bottomLeft); rectange area: \(area); screen size: \(screenSize); screen area: \(screenArea); ratio: \(ratio)")
         if ratio < 0.4 {
-            self.accuracy = "Move closer"
+            self.accuracy = NSLocalizedString("feature.move_closer", comment: "")
             return
         }
         
@@ -116,7 +116,7 @@ extension RectangleFeature {
         rate *= angle < mpi2 ? angle / mpi2 : mpi2 / angle
         print("rectange rate: \(rate)")
         if rate < 0.9 {
-            self.accuracy = "Hold straight"
+            self.accuracy = NSLocalizedString("feature.hold_straight", comment: "")
             return
         }
         
